@@ -1,29 +1,31 @@
 package com.bsuir.iit.CourseWork.classifier;
 
+import com.bsuir.iit.CourseWork.model.Yogurt;
 import com.bsuir.iit.CourseWork.model.enums.Quality;
 import com.bsuir.iit.CourseWork.service.DataGenerator;
+import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Log4j2
 @Component
+@AllArgsConstructor
 public class ClassifierRunner {
+
+    private final ClassifierTrainer classifierTrainer;
+    private final DataGenerator dataGenerator;
 
     @PostConstruct
     public void init() {
-        var generator = new DataGenerator();
-
-        // Generating data for learning
-        var trainingData = generator.generateTrainingInstance(500000);
-
-        var trainer = new ClassifierTrainer();
+        var trainingData = dataGenerator.generateTrainingInstance(500000);
 
         var sentimentPositiveCount = new AtomicInteger();
         var sentimentNegativeCount = new AtomicInteger();
         var addedNum = new AtomicInteger();
 
-        System.out.println("Adding training instances");
         trainingData.forEach((key, value) -> {
             if (value.equals(Quality.GOOD)) {
                 sentimentPositiveCount.getAndIncrement();
@@ -32,19 +34,21 @@ public class ClassifierRunner {
                 sentimentNegativeCount.getAndIncrement();
                 addedNum.getAndIncrement();
             }
-            trainer.addTrainingInstance(value, key);
+            classifierTrainer.addTrainingInstance(value, key);
         });
 
-        System.out.printf("Added %s instances%n", addedNum);
-        System.out.printf("Of which %s positive instances and %s negative instances%n",
-                sentimentPositiveCount, sentimentNegativeCount);
+        log.info("Added {} instances of which {} positive instances and {} negative instances",
+                addedNum, sentimentPositiveCount, sentimentNegativeCount);
 
-        System.out.println("Training and saving Model");
-        trainer.trainModel();
-        trainer.saveModel();
+        classifierTrainer.trainModel();
+        classifierTrainer.saveModel();
 
-        System.out.println("Testing model");
-        trainer.testModel();
+        log.info("Testing model");
+        classifierTrainer.testModel();
+    }
+
+    public Quality classify(final Yogurt data) {
+        return classifierTrainer.classify(data);
     }
 
 }

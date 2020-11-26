@@ -4,6 +4,7 @@ import com.bsuir.iit.CourseWork.model.Yogurt;
 import com.bsuir.iit.CourseWork.model.enums.Quality;
 import lombok.Data;
 import lombok.SneakyThrows;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import weka.classifiers.bayes.NaiveBayesMultinomialText;
@@ -19,6 +20,7 @@ import static java.util.stream.Collectors.toList;
 import static weka.core.SerializationHelper.write;
 
 @Data
+@Log4j2
 @Component
 public class ClassifierTrainer {
 
@@ -59,7 +61,7 @@ public class ClassifierTrainer {
         Evaluation eTest = new Evaluation(dataRaw);
         eTest.evaluateModel(classifier, dataRaw);
         String strSummary = eTest.toSummaryString();
-        System.out.println(strSummary);
+        log.info(strSummary);
     }
 
     @SneakyThrows
@@ -79,10 +81,11 @@ public class ClassifierTrainer {
         var prediction = this.classifier.classifyInstance(toClassify);
         var distribution = this.classifier.distributionForInstance(toClassify);
 
-        if (distribution[0] != distribution[1])
-            return Quality.values()[(int) prediction];
-        else
-            return Quality.UNDEFINED;
+        var quality = distribution[0] != distribution[1] ?
+                Quality.values()[(int) prediction] : Quality.UNDEFINED;
+        log.info("Product {} is {}", yogurt, quality);
+
+        return quality;
     }
 
     private String prepareContent(final Yogurt yogurt) {
