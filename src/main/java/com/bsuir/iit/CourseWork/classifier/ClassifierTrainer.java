@@ -7,8 +7,8 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import weka.classifiers.bayes.NaiveBayesMultinomialText;
 import weka.classifiers.evaluation.Evaluation;
+import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instances;
@@ -26,12 +26,16 @@ public class ClassifierTrainer {
 
     private static final String MODEL_FILE = "src/main/resources/model.model";
 
-    private NaiveBayesMultinomialText classifier;
+    private MultilayerPerceptron classifier;
     private Instances dataRaw;
 
     @Autowired
     public ClassifierTrainer() {
-        classifier = new NaiveBayesMultinomialText();
+        classifier = new MultilayerPerceptron();
+        classifier.setLearningRate(0.1);
+        classifier.setMomentum(0.2);
+        classifier.setTrainingTime(2000);
+        classifier.setHiddenLayers("3");
 
         var classVal = List.of(Quality.values()).stream().map(Enum::name).collect(toList());
 

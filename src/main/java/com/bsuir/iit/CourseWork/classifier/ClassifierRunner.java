@@ -20,7 +20,7 @@ public class ClassifierRunner {
 
     @PostConstruct
     public void init() {
-        var trainingData = dataGenerator.generateTrainingInstance(500000);
+        var trainingData = dataGenerator.generateTrainingInstance(250000);
 
         var sentimentPositiveCount = new AtomicInteger();
         var sentimentNegativeCount = new AtomicInteger();
